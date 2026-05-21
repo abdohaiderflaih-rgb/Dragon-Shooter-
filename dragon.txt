@@ -1,0 +1,431 @@
+local RedzLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/linhmcfake/LuaLibrary/refs/heads/main/RedzLibraryV5.lua"))()
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+-- [1] Intro System (100% Screen Coverage)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DragonShooterIntro"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.DisplayOrder = 999999 
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = CoreGui
+
+local IntroBackground = Instance.new("Frame")
+IntroBackground.Size = UDim2.new(1, 0, 1, 0)
+IntroBackground.Position = UDim2.new(0, 0, 0, 0)
+IntroBackground.BackgroundColor3 = Color3.fromRGB(15, 5, 5) -- Deep dragon red-black vibe
+IntroBackground.BorderSizePixel = 0
+IntroBackground.ZIndex = 999999
+IntroBackground.Parent = ScreenGui
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(0, 600, 0, 100)
+TitleLabel.Position = UDim2.new(0.5, -300, 0.45, -50)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "🔥 DRAGON SHOOTER 🔥"
+TitleLabel.Font = Enum.Font.SpecialElite
+TitleLabel.TextSize = math.min(Camera.ViewportSize.X * 0.08, 60)
+TitleLabel.TextColor3 = Color3.fromRGB(255, 60, 60) -- Fiery Red
+TitleLabel.TextTransparency = 1
+TitleLabel.ZIndex = 1000000
+TitleLabel.Parent = IntroBackground
+
+local SubTitleLabel = Instance.new("TextLabel")
+SubTitleLabel.Size = UDim2.new(0, 400, 0, 50)
+SubTitleLabel.Position = UDim2.new(0.5, -200, 0.55, 0)
+SubTitleLabel.BackgroundTransparency = 1
+SubTitleLabel.Text = "VIP HITBOX & ESP EDITION"
+SubTitleLabel.Font = Enum.Font.SourceSansBold
+SubTitleLabel.TextSize = 22
+SubTitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubTitleLabel.TextTransparency = 1
+SubTitleLabel.ZIndex = 1000000
+SubTitleLabel.Parent = IntroBackground
+
+local FallingParticles = {}
+local IntroActive = true
+
+task.spawn(function()
+    while IntroActive do
+        if not IntroActive then break end
+        local Particle = Instance.new("Frame")
+        Particle.Size = UDim2.new(0, math.random(4, 8), 0, math.random(4, 8))
+        Particle.Position = UDim2.new(math.random(0, 100)/100, 0, -0.05, 0)
+        Particle.BackgroundColor3 = Color3.fromRGB(255, math.random(50, 150), 0) -- Fire colors
+        Particle.BorderSizePixel = 0
+        Particle.ZIndex = 999999
+        Particle.Parent = IntroBackground
+        
+        local UICorner = Instance.new("UICorner")
+        UICorner.CornerRadius = UDim.new(1, 0)
+        UICorner.Parent = Particle
+        
+        table.insert(FallingParticles, Particle)
+        
+        local FallSpeed = math.random(2, 4)
+        local FallTween = TweenService:Create(Particle, TweenInfo.new(FallSpeed, Enum.EasingStyle.Linear), {
+            Position = UDim2.new(Particle.Position.X.Scale + (math.random(-10, 10)/100), 0, 1.05, 0),
+            BackgroundTransparency = 0.5
+        })
+        FallTween:Play()
+        
+        task.delay(FallSpeed, function()
+            Particle:Destroy()
+        end)
+        
+        task.wait(0.08)
+    end
+end)
+
+TweenService:Create(TitleLabel, TweenInfo.new(1.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+TweenService:Create(SubTitleLabel, TweenInfo.new(2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+
+task.delay(5, function()
+    IntroActive = false
+    TweenService:Create(IntroBackground, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(TitleLabel, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
+    TweenService:Create(SubTitleLabel, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
+    
+    for _, Particle in pairs(FallingParticles) do
+        if Particle and Particle.Parent then
+            TweenService:Create(Particle, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+        end
+    end
+    task.wait(1)
+    ScreenGui:Destroy()
+end)
+
+-- [2] Auto Dhikr System
+local DhikrGui = Instance.new("ScreenGui")
+DhikrGui.Name = "AutoDhikrSystem"
+DhikrGui.ResetOnSpawn = false
+DhikrGui.Parent = CoreGui
+
+local DhikrFrame = Instance.new("Frame")
+DhikrFrame.Size = UDim2.new(0, 360, 0, 45) 
+DhikrFrame.Position = UDim2.new(0.5, -180, 0.05, 0) 
+DhikrFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+DhikrFrame.BackgroundTransparency = 1 
+DhikrFrame.BorderSizePixel = 0
+DhikrFrame.Parent = DhikrGui
+
+local FrameCorner = Instance.new("UICorner")
+FrameCorner.CornerRadius = UDim.new(0, 8)
+FrameCorner.Parent = DhikrFrame
+
+local FrameStroke = Instance.new("UIStroke")
+FrameStroke.Thickness = 1.5
+FrameStroke.Color = Color3.fromRGB(40, 40, 50)
+FrameStroke.Transparency = 1
+FrameStroke.Parent = DhikrFrame
+
+local DhikrLabel = Instance.new("TextLabel")
+DhikrLabel.Size = UDim2.new(1, 0, 1, 0)
+DhikrLabel.BackgroundTransparency = 1
+DhikrLabel.Text = ""
+DhikrLabel.Font = Enum.Font.SourceSansBold
+DhikrLabel.TextSize = 19 
+DhikrLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+DhikrLabel.TextTransparency = 1
+DhikrLabel.TextStrokeTransparency = 1
+DhikrLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+DhikrLabel.Parent = DhikrFrame
+
+local DhikrList = {
+    "✨ اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَآلِ مُحَمَّدٍ ✨",
+    "🌿 سُبْحَانَ اللَّهِ وَبِحَمْدِهِ ، سُبْحَانَ اللَّهِ الْعَظِيمِ 🌿",
+    "🕋 أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ 🕋",
+    "💫 لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ 💫",
+    "🌟 لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ 🌟",
+    "💎 الْحَمْدُ لِلَّهِ حَمْدًا كَثِيرًا طَيِّبًا مُبَارَكًا فِيهِ 💎"
+}
+
+local RandomColors = {
+    Color3.fromRGB(0, 255, 255),   
+    Color3.fromRGB(0, 255, 127),   
+    Color3.fromRGB(255, 215, 0),   
+    Color3.fromRGB(255, 105, 180), 
+    Color3.fromRGB(170, 85, 255),  
+    Color3.fromRGB(255, 99, 71),   
+    Color3.fromRGB(240, 248, 255)  
+}
+
+task.spawn(function()
+    task.wait(6) 
+    while true do
+        local RandomDhikr = DhikrList[math.random(1, #DhikrList)]
+        local ChosenColor = RandomColors[math.random(1, #RandomColors)]
+        
+        DhikrLabel.Text = RandomDhikr
+        DhikrLabel.TextColor3 = ChosenColor
+        FrameStroke.Color = ChosenColor 
+        
+        TweenService:Create(DhikrFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0.25}):Play()
+        TweenService:Create(FrameStroke, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.4}):Play()
+        TweenService:Create(DhikrLabel, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0, TextStrokeTransparency = 0.5}):Play()
+        
+        task.wait(4) 
+        
+        TweenService:Create(DhikrFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(FrameStroke, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 1}):Play()
+        TweenService:Create(DhikrLabel, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 1, TextStrokeTransparency = 1}):Play()
+        
+        task.wait(26) 
+    end
+end)
+
+-- [3] UI Window Creation
+local Window = RedzLib:MakeWindow({
+    Title = "🔥 DRAGON SHOOTER | PRIVATE VIP 🔥",
+    SubTitle = "HITBOX & ADVANCED ESP MODULE",
+    LoadingTitle = "Loading Dragon Engine...",
+    HoldToDestroy = false
+})
+
+local Config = {
+    HitboxEnabled = false,
+    HitboxSize = 2,
+    HitboxColor = Color3.fromRGB(255, 0, 0),
+    HitboxRGB = false,
+    HideHead = false,
+    BoxESP = false,
+    LinesESP = false,
+    SkeletonESP = false,
+    NameESP = false,
+    ESPColor = Color3.fromRGB(255, 0, 0),
+    ESPRGB = false
+}
+
+local ESPObjects = {}
+
+local HitboxTab = Window:MakeTab({"Hitbox & Colors", "target"})
+local ESPTab = Window:MakeTab({"ESP Settings", "eye"})
+local CreditsTab = Window:MakeTab({"👑 Accounts 👑", "user"})
+
+-- Hitbox Tab
+HitboxTab:AddSection({"🎮 التحكم بالهيدبوكس"})
+
+HitboxTab:AddToggle({
+    Name = "تشغيل نظام الهيدبوكس 🟢/🔴",
+    Default = false,
+    Callback = function(State) Config.HitboxEnabled = State end
+})
+
+HitboxTab:AddTextBox({
+    Name = "ادخل حجم الهيدبوكس من الكيبورد",
+    PlaceholderText = "اكتب رقم هنا... (مثال: 15)",
+    ClearTextOnFocus = true,
+    Callback = function(Value)
+        local NumberValue = tonumber(Value)
+        Config.HitboxSize = NumberValue or 2
+    end
+})
+
+HitboxTab:AddToggle({
+    Name = "إخفاء الرأس تماماً عند التكبير 👤",
+    Default = false,
+    Callback = function(State) Config.HideHead = State end
+})
+
+HitboxTab:AddSection({"🎨 التحكم بالألوان السبعة + RGB"})
+
+HitboxTab:AddToggle({
+    Name = "تشغيل ألوان الـ RGB المستمرة 🌈",
+    Default = false,
+    Callback = function(State) 
+        Config.HitboxRGB = State 
+        Config.ESPRGB = State 
+    end
+})
+
+local function ChangeAllColors(NewColor)
+    Config.HitboxRGB = false
+    Config.ESPRGB = false
+    Config.HitboxColor = NewColor
+    Config.ESPColor = NewColor
+end
+
+HitboxTab:AddButton({ Name = "🔴 اللون الأحمر", Callback = function() ChangeAllColors(Color3.fromRGB(255, 0, 0)) end })
+HitboxTab:AddButton({ Name = "🟢 اللون الأخضر", Callback = function() ChangeAllColors(Color3.fromRGB(0, 255, 0)) end })
+HitboxTab:AddButton({ Name = "🔵 اللون الأزرق", Callback = function() ChangeAllColors(Color3.fromRGB(0, 0, 255)) end })
+HitboxTab:AddButton({ Name = "🟡 اللون الأصفر", Callback = function() ChangeAllColors(Color3.fromRGB(255, 255, 0)) end })
+HitboxTab:AddButton({ Name = "🟣 اللون البنفسجي", Callback = function() ChangeAllColors(Color3.fromRGB(170, 0, 255)) end })
+HitboxTab:AddButton({ Name = "💗 اللون الوردي", Callback = function() ChangeAllColors(Color3.fromRGB(255, 105, 180)) end })
+HitboxTab:AddButton({ Name = "⚪ اللون الأبيض", Callback = function() ChangeAllColors(Color3.fromRGB(255, 255, 255)) end })
+
+-- ESP Tab
+ESPTab:AddSection({"👁️ فلاتر كشف اللاعبين خلف الجدران"})
+
+ESPTab:AddToggle({
+    Name = "عرض المربعات حول اللاعبين (Box) 🔲",
+    Default = false,
+    Callback = function(State) Config.BoxESP = State end
+})
+
+ESPTab:AddToggle({
+    Name = "عرض خطوط التتبع (من فوق) 📉",
+    Default = false,
+    Callback = function(State) Config.LinesESP = State end
+})
+
+ESPTab:AddToggle({
+    Name = "عرض الهيكل العظمي (Skeleton) 💀",
+    Default = false,
+    Callback = function(State) Config.SkeletonESP = State end
+})
+
+ESPTab:AddToggle({
+    Name = "عرض أسماء اللاعبين (Names) 🏷️",
+    Default = false,
+    Callback = function(State) Config.NameESP = State end
+})
+
+-- Credits Tab
+CreditsTab:AddSection({"👑 حسابات المطور والحقوق 👑"})
+
+CreditsTab:AddButton({
+    Name = "🎵 تيك توك: 1koo_1 (اضغط للنسخ)",
+    Callback = function()
+        setclipboard("1koo_1")
+        game:GetService("StarterGui"):SetCore("SendNotification", { Title = "تم النسخ بنجاح! ✅", Text = "تم نسخ حساب التيك توك: 1koo_1", Duration = 3 })
+    end
+})
+
+CreditsTab:AddButton({
+    Name = "🎮 روبلوكس: ronaldo_rtx7 (اضغط للنسخ)",
+    Callback = function()
+        setclipboard("ronaldo_rtx7")
+        game:GetService("StarterGui"):SetCore("SendNotification", { Title = "تم النسخ بنجاح! ✅", Text = "تم نسخ حساب روبلوكس: ronaldo_rtx7", Duration = 3 })
+    end
+})
+
+-- [4] Core Backend Framework
+local function CreateESP(Player)
+    if ESPObjects[Player] then return end
+    local Objects = {
+        Box = Drawing.new("Square"),
+        Line = Drawing.new("Line"),
+        Name = Drawing.new("Text"),
+        Skeleton = {}
+    }
+    Objects.Box.Thickness = 1.5
+    Objects.Box.Filled = false
+    Objects.Box.Visible = false
+    Objects.Line.Thickness = 1.5
+    Objects.Line.Visible = false
+    Objects.Name.Size = 16
+    Objects.Name.Center = true
+    Objects.Name.Outline = true
+    Objects.Name.Visible = false
+    
+    for i = 1, 6 do 
+        local L = Drawing.new("Line")
+        L.Thickness = 1.5
+        L.Visible = false
+        table.insert(Objects.Skeleton, L)
+    end
+    ESPObjects[Player] = Objects
+end
+
+local function RemoveESP(Player)
+    if ESPObjects[Player] then
+        ESPObjects[Player].Box:Remove()
+        ESPObjects[Player].Line:Remove()
+        ESPObjects[Player].Name:Remove()
+        for _, Bone in pairs(ESPObjects[Player].Skeleton) do Bone:Remove() end
+        ESPObjects[Player] = nil
+    end
+end
+
+Players.PlayerAdded:Connect(CreateESP)
+Players.PlayerRemoving:Connect(RemoveESP)
+for _, p in pairs(Players:GetPlayers()) do if p ~= LocalPlayer then CreateESP(p) end end
+
+local hue = 0
+RunService.RenderStepped:Connect(function()
+    hue = hue + 0.005 if hue > 1 then hue = 0 end
+    
+    local CurrentColor = Config.ESPRGB and Color3.fromHSV(hue, 1, 1) or Config.ESPColor
+    local CurrentHitboxColor = Config.HitboxRGB and Color3.fromHSV(hue, 1, 1) or Config.HitboxColor
+    
+    for Player, ESP in pairs(ESPObjects) do
+        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid.Health > 0 then
+            local Char = Player.Character
+            local HRP = Char.HumanoidRootPart
+            local Head = Char:FindFirstChild("Head")
+            
+            if Config.HitboxEnabled and Config.HitboxSize > 2 then
+                HRP.Size = Vector3.new(Config.HitboxSize, Config.HitboxSize, Config.HitboxSize)
+                HRP.Color = CurrentHitboxColor
+                HRP.Transparency = 0.6
+                HRP.Material = Enum.Material.Neon
+                HRP.CanCollide = false
+                if Head then Head.Transparency = Config.HideHead and 1 or 0 end
+            else
+                HRP.Size = Vector3.new(2, 2, 1)
+                HRP.Transparency = 1
+                if Head then Head.Transparency = 0 end
+            end
+            
+            local HRP_Pos, OnScreen = Camera:WorldToViewportPoint(HRP.Position)
+            
+            if OnScreen then
+                if Config.BoxESP then
+                    local Head_Pos = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 0.5, 0))
+                    local Leg_Pos = Camera:WorldToViewportPoint(HRP.Position - Vector3.new(0, 3, 0))
+                    local Height = math.abs(Head_Pos.Y - Leg_Pos.Y)
+                    local Width = Height / 1.5
+                    ESP.Box.Size = Vector2.new(Width, Height)
+                    ESP.Box.Position = Vector2.new(HRP_Pos.X - Width / 2, Head_Pos.Y)
+                    ESP.Box.Color = CurrentColor
+                    ESP.Box.Visible = true
+                else ESP.Box.Visible = false end
+                
+                if Config.LinesESP then
+                    ESP.Line.From = Vector2.new(Camera.ViewportSize.X / 2, 0) 
+                    ESP.Line.To = Vector2.new(HRP_Pos.X, HRP_Pos.Y)
+                    ESP.Line.Color = CurrentColor
+                    ESP.Line.Visible = true
+                else ESP.Line.Visible = false end
+                
+                if Config.NameESP then
+                    ESP.Name.Text = Player.Name
+                    ESP.Name.Position = Vector2.new(HRP_Pos.X, Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 2, 0)).Y)
+                    ESP.Name.Color = CurrentColor
+                    ESP.Name.Visible = true
+                else ESP.Name.Visible = false end
+                
+                if Config.SkeletonESP and Char:FindFirstChild("LeftUpperArm") and Char:FindFirstChild("RightUpperArm") and Char:FindFirstChild("LeftUpperLeg") and Char:FindFirstChild("RightUpperLeg") then
+                    local Joints = {
+                        {Head, Char.UpperTorso}, {Char.UpperTorso, Char.LowerTorso},
+                        {Char.UpperTorso, Char.LeftUpperArm}, {Char.UpperTorso, Char.RightUpperArm},
+                        {Char.LowerTorso, Char.LeftUpperLeg}, {Char.LowerTorso, Char.RightUpperLeg}
+                    }
+                    for i, Joint in pairs(Joints) do
+                        local p1 = Camera:WorldToViewportPoint(Joint[1].Position)
+                        local p2 = Camera:WorldToViewportPoint(Joint[2].Position)
+                        ESP.Skeleton[i].From = Vector2.new(p1.X, p1.Y)
+                        ESP.Skeleton[i].To = Vector2.new(p2.X, p2.Y)
+                        ESP.Skeleton[i].Color = CurrentColor
+                        ESP.Skeleton[i].Visible = true
+                    end
+                else
+                    for _, Bone in pairs(ESP.Skeleton) do Bone.Visible = false end
+                end
+            else
+                ESP.Box.Visible = false ESP.Line.Visible = false ESP.Name.Visible = false
+                for _, Bone in pairs(ESP.Skeleton) do Bone.Visible = false end
+            end
+        else
+            if ESPObjects[Player] then
+                ESP.Box.Visible = false ESP.Line.Visible = false ESP.Name.Visible = false
+                for _, Bone in pairs(ESP.Skeleton) do Bone.Visible = false end
+            end
+        end
+    end
+end)
